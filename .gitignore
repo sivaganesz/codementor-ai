@@ -1,0 +1,113 @@
+# =========================
+# CodeMentor AI .gitignore
+# =========================
+
+
+# -------- Dependencies --------
+# Installed packages
+node_modules/
+
+
+# -------- Environment Files --------
+# Secrets and local configs
+.env
+.env.*
+
+
+# -------- Build Output --------
+# Compiled / generated files
+dist/
+build/
+out/
+.output/
+
+
+# -------- Frontend (Vite) --------
+# Vite cache and build
+frontend/dist/
+frontend/.vite/
+
+
+# -------- Backend (NestJS) --------
+# Compiled backend files
+backend/dist/
+
+
+# -------- Remotion --------
+# Generated video files and cache
+frontend/src/remotion/out/
+frontend/src/remotion/.cache/
+frontend/src/remotion/renders/
+
+
+# -------- Logs --------
+# Log files
+logs/
+*.log
+
+
+# -------- Cache --------
+# Tool caches
+.cache/
+.turbo/
+.parcel-cache/
+.eslintcache
+*.tsbuildinfo
+
+
+# -------- Testing --------
+# Test coverage reports
+coverage/
+.nyc_output/
+
+
+# -------- Database --------
+# Local database files
+*.sqlite
+*.sqlite3
+*.db
+
+
+# -------- Docker --------
+# Local docker override
+docker-compose.override.yml
+
+
+# -------- OS Files --------
+# System generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+# -------- IDE / Editors --------
+# Editor settings
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+
+# -------- Media / Uploads --------
+# Uploaded or generated media
+uploads/
+public/uploads/
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+
+# -------- Security Files --------
+# Certificates and keys
+*.pem
+*.key
+*.cert
+*.p12
+
+
+# -------- Deploy Platforms --------
+# Hosting platform configs
+.vercel
+.netlify

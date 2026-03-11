@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import { TopicContent, GenerateTopicDto, TopicSummary } from '../../types/topic'
+import type { TopicContent, GenerateTopicDto, TopicSummary } from '../../types/topic'
 
 export const topicApi = {
   // Generate a focused topic deep-dive

@@ -9,38 +9,127 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TopicsIndexRouteImport } from './routes/topics/index'
+import { Route as MyCoursesIndexRouteImport } from './routes/my-courses/index'
+import { Route as GenerateIndexRouteImport } from './routes/generate/index'
+import { Route as TopicsTopicIdRouteImport } from './routes/topics/$topicId'
+import { Route as GenerateCourseIdRouteImport } from './routes/generate/$courseId'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TopicsIndexRoute = TopicsIndexRouteImport.update({
+  id: '/topics/',
+  path: '/topics/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyCoursesIndexRoute = MyCoursesIndexRouteImport.update({
+  id: '/my-courses/',
+  path: '/my-courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateIndexRoute = GenerateIndexRouteImport.update({
+  id: '/generate/',
+  path: '/generate/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TopicsTopicIdRoute = TopicsTopicIdRouteImport.update({
+  id: '/topics/$topicId',
+  path: '/topics/$topicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateCourseIdRoute = GenerateCourseIdRouteImport.update({
+  id: '/generate/$courseId',
+  path: '/generate/$courseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/generate/$courseId': typeof GenerateCourseIdRoute
+  '/topics/$topicId': typeof TopicsTopicIdRoute
+  '/generate/': typeof GenerateIndexRoute
+  '/my-courses/': typeof MyCoursesIndexRoute
+  '/topics/': typeof TopicsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/generate/$courseId': typeof GenerateCourseIdRoute
+  '/topics/$topicId': typeof TopicsTopicIdRoute
+  '/generate': typeof GenerateIndexRoute
+  '/my-courses': typeof MyCoursesIndexRoute
+  '/topics': typeof TopicsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/generate/$courseId': typeof GenerateCourseIdRoute
+  '/topics/$topicId': typeof TopicsTopicIdRoute
+  '/generate/': typeof GenerateIndexRoute
+  '/my-courses/': typeof MyCoursesIndexRoute
+  '/topics/': typeof TopicsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/generate/$courseId'
+    | '/topics/$topicId'
+    | '/generate/'
+    | '/my-courses/'
+    | '/topics/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/generate/$courseId'
+    | '/topics/$topicId'
+    | '/generate'
+    | '/my-courses'
+    | '/topics'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/generate/$courseId'
+    | '/topics/$topicId'
+    | '/generate/'
+    | '/my-courses/'
+    | '/topics/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  GenerateCourseIdRoute: typeof GenerateCourseIdRoute
+  TopicsTopicIdRoute: typeof TopicsTopicIdRoute
+  GenerateIndexRoute: typeof GenerateIndexRoute
+  MyCoursesIndexRoute: typeof MyCoursesIndexRoute
+  TopicsIndexRoute: typeof TopicsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +137,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/topics/': {
+      id: '/topics/'
+      path: '/topics'
+      fullPath: '/topics/'
+      preLoaderRoute: typeof TopicsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-courses/': {
+      id: '/my-courses/'
+      path: '/my-courses'
+      fullPath: '/my-courses/'
+      preLoaderRoute: typeof MyCoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate/': {
+      id: '/generate/'
+      path: '/generate'
+      fullPath: '/generate/'
+      preLoaderRoute: typeof GenerateIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/topics/$topicId': {
+      id: '/topics/$topicId'
+      path: '/topics/$topicId'
+      fullPath: '/topics/$topicId'
+      preLoaderRoute: typeof TopicsTopicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate/$courseId': {
+      id: '/generate/$courseId'
+      path: '/generate/$courseId'
+      fullPath: '/generate/$courseId'
+      preLoaderRoute: typeof GenerateCourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  GenerateCourseIdRoute: GenerateCourseIdRoute,
+  TopicsTopicIdRoute: TopicsTopicIdRoute,
+  GenerateIndexRoute: GenerateIndexRoute,
+  MyCoursesIndexRoute: MyCoursesIndexRoute,
+  TopicsIndexRoute: TopicsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

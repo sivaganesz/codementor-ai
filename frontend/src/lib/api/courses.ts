@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import { Course, CoursePlan, GenerationStatus } from '../../types/course'
+import type { Course, CoursePlan, GenerationStatus } from '../../types/course'
 
 export interface GeneratePlanDto {
   prompt: string

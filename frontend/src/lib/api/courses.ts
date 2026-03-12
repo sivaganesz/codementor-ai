@@ -3,6 +3,7 @@ import type { Course, CoursePlan, GenerationStatus } from '../../types/course'
 
 export interface GeneratePlanDto {
   prompt: string
+  difficulty: string
 }
 
 export const courseApi = {

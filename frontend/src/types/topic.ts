@@ -5,7 +5,7 @@ export interface GenerateTopicDto {
 
 export interface TopicContent {
   id: string
-  topic: string
+  name: string
   overview: string
   realWorldExamples: RealWorldExample[]
   codeExamples: TopicCodeExample[]
@@ -31,6 +31,7 @@ export interface TopicCodeExample {
 
 export interface TopicSummary {
   id: string
-  topic: string
+  name: string
+  overview: string
   createdAt: string
 }

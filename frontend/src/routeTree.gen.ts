@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsIndexRouteImport } from './routes/topics/index'
@@ -17,6 +18,11 @@ import { Route as GenerateIndexRouteImport } from './routes/generate/index'
 import { Route as TopicsTopicIdRouteImport } from './routes/topics/$topicId'
 import { Route as GenerateCourseIdRouteImport } from './routes/generate/$courseId'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -56,6 +62,7 @@ const GenerateCourseIdRoute = GenerateCourseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/generate/$courseId': typeof GenerateCourseIdRoute
   '/topics/$topicId': typeof TopicsTopicIdRoute
   '/generate/': typeof GenerateIndexRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/generate/$courseId': typeof GenerateCourseIdRoute
   '/topics/$topicId': typeof TopicsTopicIdRoute
   '/generate': typeof GenerateIndexRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/generate/$courseId': typeof GenerateCourseIdRoute
   '/topics/$topicId': typeof TopicsTopicIdRoute
   '/generate/': typeof GenerateIndexRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/register'
     | '/generate/$courseId'
     | '/topics/$topicId'
     | '/generate/'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/register'
     | '/generate/$courseId'
     | '/topics/$topicId'
     | '/generate'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/login'
+    | '/register'
     | '/generate/$courseId'
     | '/topics/$topicId'
     | '/generate/'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   GenerateCourseIdRoute: typeof GenerateCourseIdRoute
   TopicsTopicIdRoute: typeof TopicsTopicIdRoute
   GenerateIndexRoute: typeof GenerateIndexRoute
@@ -123,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   GenerateCourseIdRoute: GenerateCourseIdRoute,
   TopicsTopicIdRoute: TopicsTopicIdRoute,
   GenerateIndexRoute: GenerateIndexRoute,

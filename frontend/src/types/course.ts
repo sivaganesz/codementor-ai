@@ -48,5 +48,7 @@ export interface CodeExample {
 
 export interface GenerationStatus {
   jobId: string
-  status: 'draft' | 'generating' | 'completed' | 'failed'
+  courseId?: string
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'draft' | 'generating'
+  progress: number
 }

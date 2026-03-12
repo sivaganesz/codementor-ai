@@ -2,6 +2,8 @@
 
 @layer base {
   body {
-    @apply text-slate-900;
+    background-color: #0A0A0F;
+    color: #F0EFFF;
+    font-family: 'DM Sans', sans-serif;
   }
 }

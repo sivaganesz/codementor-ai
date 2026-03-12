@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Topic } from './entities/topic.entity';
 import { GenerateTopicDto } from './dto/generate-topic.dto';
 import { AiService } from '../ai/ai.service';
+import { UserPayload } from '../common/interfaces/user.interface';
 
 @Injectable()
 export class TopicsService {
@@ -12,10 +13,10 @@ export class TopicsService {
     private aiService: AiService,
   ) {}
 
-  async generate(dto: GenerateTopicDto, user: any): Promise<Topic> {
+  async generate(dto: GenerateTopicDto, user: UserPayload): Promise<Topic> {
     const content = await this.aiService.generateTopicContent(
       dto.topic,
-      dto.preferredDepth ?? 'intermediate'
+      dto.preferredDepth ?? 'intermediate',
     );
 
     const topic = this.topicRepo.create({

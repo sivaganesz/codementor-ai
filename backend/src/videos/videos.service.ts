@@ -5,9 +5,7 @@ import { Video } from './entities/video.entity';
 
 @Injectable()
 export class VideosService {
-  constructor(
-    @InjectRepository(Video) private videoRepo: Repository<Video>,
-  ) {}
+  constructor(@InjectRepository(Video) private videoRepo: Repository<Video>) {}
 
   async generateForModule(moduleId: string) {
     const video = this.videoRepo.create({

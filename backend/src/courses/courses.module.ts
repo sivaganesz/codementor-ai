@@ -9,14 +9,20 @@ import { Course } from './entities/course.entity';
 import { CourseModule as CourseModuleEntity } from './entities/module.entity';
 import { Lesson } from './entities/lesson.entity';
 import { AiModule } from '../ai/ai.module';
+import { JobsModule } from '../jobs/jobs.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Course, CourseModuleEntity, Lesson]),
     BullModule.registerQueue({ name: 'course-generation' }),
     AiModule,
+    JobsModule,
   ],
   controllers: [CoursesController],
-  providers: [CoursesService, CourseGenerationService, CourseGenerationProcessor],
+  providers: [
+    CoursesService,
+    CourseGenerationService,
+    CourseGenerationProcessor,
+  ],
 })
 export class CoursesModule {}

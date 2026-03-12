@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { GeneratePlanDto } from './dto/generate-plan.dto';
 import { CourseGenerationService } from './course-generation.service';
+import { UserPayload } from '../common/interfaces/user.interface';
 
 @Injectable()
 export class CoursesService {
@@ -12,11 +13,11 @@ export class CoursesService {
     private generationService: CourseGenerationService,
   ) {}
 
-  generatePlan(dto: GeneratePlanDto, user: any) {
-    return this.generationService.generatePlan(dto.prompt, user.id);
+  generatePlan(dto: GeneratePlanDto, user: UserPayload) {
+    return this.generationService.generatePlan(dto.prompt, user.id, dto.level);
   }
 
-  confirmPlan(planId: string, user: any) {
+  confirmPlan(planId: string, user: UserPayload) {
     return this.generationService.confirmAndQueue(planId, user.id);
   }
 

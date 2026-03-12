@@ -1,4 +1,10 @@
-import { IsString, MinLength, MaxLength, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  MaxLength,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GeneratePlanDto {
@@ -10,6 +16,9 @@ export class GeneratePlanDto {
 
   @IsOptional()
   @IsEnum(['beginner', 'intermediate', 'advanced'])
-  @ApiProperty({ required: false, enum: ['beginner', 'intermediate', 'advanced'] })
+  @ApiProperty({
+    required: false,
+    enum: ['beginner', 'intermediate', 'advanced'],
+  })
   level?: 'beginner' | 'intermediate' | 'advanced';
 }

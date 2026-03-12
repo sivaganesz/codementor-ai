@@ -1,9 +1,19 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { TopicsService } from './topics.service';
 import { GenerateTopicDto } from './dto/generate-topic.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UserPayload } from '../common/interfaces/user.interface';
 
 @ApiTags('topics')
 @ApiBearerAuth()
@@ -13,8 +23,9 @@ export class TopicsController {
   constructor(private topicsService: TopicsService) {}
 
   @Post('generate')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Generate topic learning content' })
-  generate(@Body() dto: GenerateTopicDto, @CurrentUser() user: any) {
+  generate(@Body() dto: GenerateTopicDto, @CurrentUser() user: UserPayload) {
     return this.topicsService.generate(dto, user);
   }
 
@@ -26,7 +37,7 @@ export class TopicsController {
 
   @Get(':topicId')
   @ApiOperation({ summary: 'Get single topic content' })
-  findOne(@Param('topicId') topicId: string, @CurrentUser() user: any) {
+  findOne(@Param('topicId') topicId: string, @CurrentUser() user: UserPayload) {
     return this.topicsService.findOne(topicId, user.id);
   }
 }

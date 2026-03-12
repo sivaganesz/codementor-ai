@@ -14,21 +14,31 @@ export class CourseGenerationService {
     @InjectQueue('course-generation') private courseGenerationQueue: Queue,
   ) {}
 
-  async generatePlan(prompt: string, userId: string): Promise<Course> {
-    const plan = await this.aiService.generateCoursePlan(prompt);
+  async generatePlan(
+    prompt: string,
+    userId: string,
+    difficulty?: string,
+  ): Promise<Course> {
+    const fullPrompt = difficulty
+      ? `${prompt} (Difficulty Level: ${difficulty})`
+      : prompt;
+    const plan = await this.aiService.generateCoursePlan(fullPrompt);
 
     const course = this.courseRepo.create({
       title: plan.title,
       description: plan.description,
       estimatedHours: plan.estimatedHours,
-      planSnapshot: plan,
+      planSnapshot: plan as any, // Cast to any for storage or fix entity type
       status: 'draft',
       userId,
     });
     return this.courseRepo.save(course);
   }
 
-  async confirmAndQueue(courseId: string, userId: string): Promise<{ jobId: string }> {
+  async confirmAndQueue(
+    courseId: string,
+    userId: string,
+  ): Promise<{ jobId: string }> {
     const course = await this.courseRepo.findOne({
       where: { id: courseId, userId },
     });
@@ -40,7 +50,7 @@ export class CourseGenerationService {
     const job = await this.courseGenerationQueue.add(
       'generate-full-course',
       { courseId, planSnapshot: course.planSnapshot },
-      { attempts: 3, backoff: { type: 'exponential', delay: 5000 } }
+      { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
     );
 
     await this.courseRepo.update(courseId, {

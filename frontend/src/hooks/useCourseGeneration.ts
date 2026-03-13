@@ -9,12 +9,28 @@ export function useCourseGeneration() {
 
   const generatePlanMutation = useMutation({
     mutationFn: (payload: { prompt: string, difficulty: string }) => courseApi.generatePlan(payload),
+    // onSuccess: (res) => {
+    //   store.setPlanId(res.data.id)
+    //   store.setPlanSnapshot(res.data)
+    //   store.setStep('review')
+    //   toast.success('Course plan generated!')
+    // },
     onSuccess: (res) => {
-      store.setPlanId(res.data.id)
-      store.setPlanSnapshot(res.data)
-      store.setStep('review')
-      toast.success('Course plan generated!')
-    },
+  const plan = res.data
+
+  const normalizedPlan = {
+    ...plan,
+    modules: plan.modules?.map((m: any) => ({
+      ...m,
+      lessons: m.lessons ?? []
+    })) ?? []
+  }
+  store.setPlanId(plan.id)
+  store.setPlanSnapshot(normalizedPlan)
+  store.setStep('review')
+
+  toast.success('Course plan generated!')
+},
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Failed to generate plan. Try again.')
     },

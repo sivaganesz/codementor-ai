@@ -1,16 +1,27 @@
 import { apiClient } from './client'
 import type { TopicContent, GenerateTopicDto, TopicSummary } from '../../types/topic'
 
+// normalize topic: backend returns topicName but frontend expects name
+function normalizeTopic(t: any): TopicContent {
+  return { ...t, name: t.name ?? t.topicName ?? '' }
+}
+function normalizeTopics(arr: any[]): TopicSummary[] {
+  return (arr || []).map(t => ({ ...t, name: t.name ?? t.topicName ?? '' }))
+}
+
 export const topicApi = {
-  // Generate a focused topic deep-dive
-  generateTopic: (payload: GenerateTopicDto) =>
-    apiClient.post<TopicContent>('/topics/generate', payload),
+  generateTopic: async (payload: GenerateTopicDto) => {
+    const res = await apiClient.post<TopicContent>('/topics/generate', payload)
+    return { ...res, data: normalizeTopic(res.data) }
+  },
 
-  // Get saved topic content
-  getTopic: (topicId: string) =>
-    apiClient.get<TopicContent>(`/topics/${topicId}`),
+  getTopic: async (topicId: string) => {
+    const res = await apiClient.get<TopicContent>(`/topics/${topicId}`)
+    return { ...res, data: normalizeTopic(res.data) }
+  },
 
-  // Browse/search topics
-  searchTopics: (query: string) =>
-    apiClient.get<TopicSummary[]>(`/topics/search?q=${query}`),
+  searchTopics: async (query: string) => {
+    const res = await apiClient.get<TopicSummary[]>(`/topics/search?q=${encodeURIComponent(query)}`)
+    return { ...res, data: normalizeTopics(res.data) }
+  },
 }

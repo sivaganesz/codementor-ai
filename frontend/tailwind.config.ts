@@ -21,6 +21,24 @@ export default {
           2: '#12121A',
           3: '#1C1C2E',
         },
+        text: {
+          primary: '#F0EFFF',
+          muted: '#8B89A8',
+        },
+      },
+      animation: {
+        gradient: 'gradient 4s ease infinite',
+        marquee: 'marquee 30s linear infinite',
+      },
+      keyframes: {
+        gradient: {
+          '0%, 100%': { backgroundPosition: '0% center' },
+          '50%': { backgroundPosition: '100% center' },
+        },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
       },
     },
   },

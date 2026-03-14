@@ -3,27 +3,25 @@ import type { Course, CoursePlan, GenerationStatus } from '../../types/course'
 
 export interface GeneratePlanDto {
   prompt: string
-  difficulty: string
+  level: string   // backend DTO field is "level", not "difficulty"
 }
 
 export const courseApi = {
-  // Step 1: Generate a course plan
-  generatePlan: (payload: GeneratePlanDto) =>
-    apiClient.post<CoursePlan>('/courses/generate-plan', payload),
+  generatePlan: (payload: { prompt: string; difficulty: string }) =>
+    apiClient.post<CoursePlan>('/courses/generate-plan', {
+      prompt: payload.prompt,
+      level: payload.difficulty.toLowerCase(),   // FIX: map difficulty → level
+    }),
 
-  // Step 2: Confirm plan → triggers full course generation
   confirmPlan: (planId: string) =>
     apiClient.post<{ jobId: string }>(`/courses/${planId}/confirm`),
 
-  // Fetch a course with all modules & lessons
   getCourse: (courseId: string) =>
     apiClient.get<Course>(`/courses/${courseId}`),
 
-  // Get all user courses
   listMyCourses: () =>
     apiClient.get<Course[]>('/courses/me'),
 
-  // Get generation status (polling)
   getGenerationStatus: (jobId: string) =>
     apiClient.get<GenerationStatus>(`/courses/status/${jobId}`),
 }

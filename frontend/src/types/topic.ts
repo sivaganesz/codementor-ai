@@ -5,7 +5,8 @@ export interface GenerateTopicDto {
 
 export interface TopicContent {
   id: string
-  name: string
+  name: string        // mapped from topicName in backend response
+  topicName?: string  // raw backend field
   overview: string
   realWorldExamples: RealWorldExample[]
   codeExamples: TopicCodeExample[]
@@ -32,6 +33,7 @@ export interface TopicCodeExample {
 export interface TopicSummary {
   id: string
   name: string
+  topicName?: string
   overview: string
   createdAt: string
 }

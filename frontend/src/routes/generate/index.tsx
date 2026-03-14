@@ -162,7 +162,7 @@ function GenerateWizard() {
                       <Clock className="w-5 h-5" /> {store.planSnapshot.estimatedHours} Hours
                     </div>
                     <div className="flex items-center gap-2">
-                      <Layers className="w-5 h-5" /> {store.planSnapshot.modules.length} Modules
+                      <Layers className="w-5 h-5" /> {store.planSnapshot?.planSnapshot?.modules?.length} Modules
                     </div>
                   </div>
 

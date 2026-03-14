@@ -1,4 +1,5 @@
 export interface CoursePlan {
+  planSnapshot: any
   id: string
   title: string
   description: string

@@ -14,6 +14,8 @@ import { TopicsModule } from './topics/topics.module';
 import { VideosModule } from './videos/videos.module';
 import { JobsModule } from './jobs/jobs.module';
 import { AiModule } from './ai/ai.module';
+import { ProgressModule } from './progress/progress.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { AiModule } from './ai/ai.module';
         password: config.get<string>('database.password'),
         database: config.get<string>('database.name'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: process.env.NODE_ENV !== 'production', // Use migrations in prod
+        synchronize: process.env.NODE_ENV !== 'production',
       }),
       inject: [ConfigService],
     }),
@@ -48,12 +50,7 @@ import { AiModule } from './ai/ai.module';
       }),
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 5,
-      },
-    ]),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 20 }]),
     AuthModule,
     UsersModule,
     CoursesModule,
@@ -61,12 +58,9 @@ import { AiModule } from './ai/ai.module';
     VideosModule,
     JobsModule,
     AiModule,
+    ProgressModule,
+    ChatbotModule,
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

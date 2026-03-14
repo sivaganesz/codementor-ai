@@ -10,6 +10,7 @@ import { CourseModule as CourseModuleEntity } from './entities/module.entity';
 import { Lesson } from './entities/lesson.entity';
 import { AiModule } from '../ai/ai.module';
 import { JobsModule } from '../jobs/jobs.module';
+import { ProgressModule } from '../progress/progress.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JobsModule } from '../jobs/jobs.module';
     BullModule.registerQueue({ name: 'course-generation' }),
     AiModule,
     JobsModule,
+    ProgressModule,
   ],
   controllers: [CoursesController],
   providers: [
@@ -24,5 +26,6 @@ import { JobsModule } from '../jobs/jobs.module';
     CourseGenerationService,
     CourseGenerationProcessor,
   ],
+  exports: [CoursesService],
 })
 export class CoursesModule {}

@@ -8,7 +8,10 @@ import { CourseModule } from '../entities/module.entity';
 import { Lesson } from '../entities/lesson.entity';
 import { AiService, CoursePlan } from '../../ai/ai.service';
 
-@Processor('course-generation')
+@Processor('course-generation', {
+  lockDuration: 300000,   // 5 minutes
+  lockRenewTime: 120000,  // renew every 2 minutes
+})
 export class CourseGenerationProcessor extends WorkerHost {
   private readonly logger = new Logger(CourseGenerationProcessor.name);
 

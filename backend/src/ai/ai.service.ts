@@ -117,4 +117,25 @@ ${context ? `\nContext: ${context}` : ''}`;
       );
     }
   }
+  async generateVideoScript(planModule: any): Promise<string> {
+    const prompt = `You are an expert educator creating a video script.
+Generate a clear, engaging video script for this course module.
+The script should be narrated, conversational, and cover all lessons.
+Include timestamps and section breaks. Keep it under 5 minutes (750 words).
+
+Module: ${planModule.title}
+Description: ${planModule.description}
+Lessons: ${planModule.lessons?.map((l: any) => l.title).join(', ')}
+
+Return ONLY the script text, no JSON.`;
+
+    try {
+      const result = await this.chatModel.generateContent(prompt);
+      return result.response.text();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Video script generation failed: ${(err as Error).message}`,
+      );
+    }
+  }
 }

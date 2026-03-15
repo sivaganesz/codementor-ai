@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('videos')
@@ -11,18 +10,15 @@ export class Video {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   moduleId: string;
 
-  @Column({ nullable: true })
-  videoUrl: string;
+  @Column({ type: 'text', nullable: true })
+  script: string;
 
   @Column({ default: 'pending' })
   status: 'pending' | 'generating' | 'completed' | 'failed';
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -21,11 +21,14 @@ import {
   Zap,
   Star,
   TrendingUp,
+  X,
 } from 'lucide-react'
 import { courseApi } from '../../lib/api/courses'
 import { progressApi } from '../../lib/api/progress'
 import type { Lesson } from '../../types/course'
 import toast from 'react-hot-toast'
+import { videoApi } from '../../lib/api/videos'
+import { Video, FileVideo, Loader2 as LoaderIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/generate/$courseId')({
   beforeLoad: ({ location }) => {
@@ -70,7 +73,7 @@ function CelebrationOverlay({ type, label, level, levelLabel, onDone }: Celebrat
           key={i}
           className="absolute w-2 h-2 rounded-full"
           style={{
-            background: ['#6C3BFF','#00D4AA','#FF6B35','#FFD700','#FF69B4'][i % 5],
+            background: ['#6C3BFF', '#00D4AA', '#FF6B35', '#FFD700', '#FF69B4'][i % 5],
             left: `${Math.random() * 100}%`,
             top: '-10px',
           }}
@@ -97,12 +100,14 @@ function CelebrationOverlay({ type, label, level, levelLabel, onDone }: Celebrat
             <span className="text-sm font-bold text-brand-primary">Level {level} — {levelLabel}</span>
           </div>
         )}
-        <button
-          onClick={onDone}
-          className="text-xs text-text-muted hover:text-brand-secondary transition-colors"
-        >
-          Continue →
-        </button>
+        {type !== 'course' && (
+          <button
+            onClick={onDone}
+            className="text-xs text-text-muted hover:text-brand-secondary transition-colors"
+          >
+            Continue →
+          </button>
+        )}
       </motion.div>
     </motion.div>
   )
@@ -140,6 +145,117 @@ function ProgressBar({ percentage, level, levelLabel }: { percentage: number; le
   )
 }
 
+// ___ video Generation _________________________________________________
+
+function VideoScriptModal({ moduleId, moduleTitle, onClose }: {
+  moduleId: string
+  moduleTitle: string
+  onClose: () => void
+}) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['video-script', moduleId],
+    queryFn: () => videoApi.getScript(moduleId).then(r => r.data),
+  })
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-surface-2 border border-white/10 rounded-3xl p-8 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-brand-secondary/20 rounded-xl flex items-center justify-center">
+              <FileVideo className="w-5 h-5 text-brand-secondary" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-lg">Video Script</h3>
+              <p className="text-text-muted text-sm">{moduleTitle}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors text-text-muted">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <LoaderIcon className="w-8 h-8 animate-spin text-brand-secondary" />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <pre className="text-text-muted text-sm leading-relaxed whitespace-pre-wrap font-body bg-surface-3 rounded-2xl p-6 border border-white/5">
+              {data?.script}
+            </pre>
+          </div>
+        )}
+
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => { navigator.clipboard.writeText(data?.script ?? ''); toast.success('Script copied!') }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/30 rounded-xl font-bold text-sm hover:bg-brand-secondary hover:text-surface-1 transition-all"
+          >
+            <Copy className="w-4 h-4" /> Copy Script
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+function GenerateVideoButton({ module, courseId }: { module: any; courseId: string }) {
+  const queryClient = useQueryClient()
+  const [showScript, setShowScript] = useState(false)
+
+  const generateMutation = useMutation({
+    mutationFn: () => videoApi.generateScript(module.id).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses', courseId] })
+      toast.success('Video script ready!')
+      setShowScript(true)
+    },
+    onError: () => toast.error('Failed to generate video script'),
+  })
+
+  if (module.videoStatus === 'completed') {
+    return (
+      <>
+        <div className="px-6 py-3">
+          <button
+            onClick={() => setShowScript(true)}
+            className="w-full py-2.5 bg-brand-secondary/10 border border-brand-secondary/30 rounded-xl text-xs font-bold uppercase tracking-widest text-brand-secondary hover:bg-brand-secondary hover:text-surface-1 transition-all flex items-center justify-center gap-2"
+          >
+            <PlayCircle className="w-3.5 h-3.5" /> View Script
+          </button>
+        </div>
+        {showScript && (
+          <VideoScriptModal
+            moduleId={module.id}
+            moduleTitle={module.title}
+            onClose={() => setShowScript(false)}
+          />
+        )}
+      </>
+    )
+  }
+
+  return (
+    <div className="px-6 py-3">
+      <button
+        onClick={() => generateMutation.mutate()}
+        disabled={generateMutation.isPending || module.videoStatus === 'generating'}
+        className="w-full py-2.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold uppercase tracking-widest text-text-muted hover:text-brand-primary hover:border-brand-primary/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+      >
+        {generateMutation.isPending || module.videoStatus === 'generating'
+          ? <><LoaderIcon className="w-3.5 h-3.5 animate-spin" /> Generating...</>
+          : <><PlayCircle className="w-3.5 h-3.5" /> Generate Video Script</>
+        }
+      </button>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────
 function CourseView() {
   const { courseId } = Route.useParams()
@@ -147,6 +263,13 @@ function CourseView() {
   const [activeModuleIdx, setActiveModuleIdx] = useState(0)
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [celebration, setCelebration] = useState<{ type: 'lesson' | 'module' | 'course'; label: string } | null>(null)
+  const lessonTopRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (activeLesson && lessonTopRef.current) {
+      lessonTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }, [activeLesson])
 
   const { data: course, isLoading, error } = useQuery({
     queryKey: ['courses', courseId],
@@ -188,6 +311,31 @@ function CourseView() {
     toast.success('Code copied!')
   }
 
+  function goToNextLesson() {
+    if (!activeLesson || !course) return
+
+    for (let m = 0; m < course.modules.length; m++) {
+      const module = course.modules[m]
+      const lessonIndex = module.lessons.findIndex(l => l.id === activeLesson.id)
+
+      if (lessonIndex !== -1) {
+        // next lesson in same module
+        if (lessonIndex < module.lessons.length - 1) {
+          setActiveLesson(module.lessons[lessonIndex + 1])
+          setActiveModuleIdx(m)
+          return
+        }
+
+        // first lesson of next module
+        if (course.modules[m + 1]) {
+          setActiveLesson(course.modules[m + 1].lessons[0])
+          setActiveModuleIdx(m + 1)
+          return
+        }
+      }
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-6 py-12 animate-pulse">
@@ -225,7 +373,10 @@ function CourseView() {
             label={celebration.label}
             level={progressData?.level}
             levelLabel={progressData?.levelLabel}
-            onDone={() => setCelebration(null)}
+            onDone={() => {
+              setCelebration(null)
+              goToNextLesson()
+            }}
           />
         )}
       </AnimatePresence>
@@ -238,11 +389,10 @@ function CourseView() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
-                course.status === 'completed'
-                  ? 'bg-brand-secondary/20 text-brand-secondary border-brand-secondary/30'
-                  : 'bg-brand-primary/20 text-brand-primary border-brand-primary/30'
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${course.status === 'completed'
+                ? 'bg-brand-secondary/20 text-brand-secondary border-brand-secondary/30'
+                : 'bg-brand-primary/20 text-brand-primary border-brand-primary/30'
+                }`}>
                 {course.status}
               </span>
               <span className="text-text-muted flex items-center gap-1 text-sm">
@@ -275,7 +425,7 @@ function CourseView() {
 
       <div className="grid grid-cols-12 gap-8 items-start">
         {/* Sidebar */}
-        <div className="col-span-12 md:col-span-4 space-y-3">
+        <div className="col-span-12 md:col-span-4 space-y-3 sticky top-24 self-start">
           {/* Progress */}
           {progressData && (
             <ProgressBar
@@ -299,9 +449,8 @@ function CourseView() {
                   className={`w-full p-5 flex items-center justify-between transition-colors ${mIdx === activeModuleIdx ? 'bg-brand-primary/10' : 'hover:bg-white/5'}`}
                 >
                   <div className="flex items-center gap-4 text-left">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm relative ${
-                      isModComplete ? 'bg-brand-secondary text-white' : mIdx === activeModuleIdx ? 'bg-brand-primary text-white' : 'bg-surface-3 text-text-muted'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm relative ${isModComplete ? 'bg-brand-secondary text-white' : mIdx === activeModuleIdx ? 'bg-brand-primary text-white' : 'bg-surface-3 text-text-muted'
+                      }`}>
                       {isModComplete ? <CheckCircle2 className="w-5 h-5" /> : mIdx + 1}
                     </div>
                     <div>
@@ -335,27 +484,22 @@ function CourseView() {
                             onClick={() => setActiveLesson(lesson)}
                             className={`w-full px-6 py-3.5 flex items-center gap-3 text-left hover:bg-white/5 transition-colors ${isActive ? 'bg-white/5 border-l-2 border-brand-primary' : ''}`}
                           >
-                            <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
-                              isDone ? 'bg-brand-secondary' : isActive ? 'border-2 border-brand-primary' : 'border border-text-muted/30'
-                            }`}>
+                            <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${isDone ? 'bg-brand-secondary' : isActive ? 'border-2 border-brand-primary' : 'border border-text-muted/30'
+                              }`}>
                               {isDone && <CheckCircle2 className="w-3 h-3 text-white" />}
                             </div>
-                            <span className={`text-sm font-medium flex-1 ${
-                              isDone ? 'text-text-muted line-through' : isActive ? 'text-text-primary' : 'text-text-muted'
-                            }`}>
+                            <span className={`text-sm font-medium flex-1 ${isDone ? 'text-text-muted line-through' : isActive ? 'text-text-primary' : 'text-text-muted'
+                              }`}>
                               {lesson.title}
                             </span>
                             {isDone && <Zap className="w-3 h-3 text-brand-secondary shrink-0" />}
                           </button>
                         )
                       })}
-                      {!module.videoUrl && (
-                        <div className="px-6 py-3">
-                          <button className="w-full py-2.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold uppercase tracking-widest text-text-muted hover:text-brand-primary hover:border-brand-primary/30 transition-all flex items-center justify-center gap-2">
-                            <PlayCircle className="w-3.5 h-3.5" /> Generate Video
-                          </button>
-                        </div>
-                      )}
+                      <GenerateVideoButton
+                        module={module}
+                        courseId={courseId}
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -369,6 +513,7 @@ function CourseView() {
           <AnimatePresence mode="wait">
             {activeLesson ? (
               <motion.div
+                ref={lessonTopRef}
                 key={activeLesson.id}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}

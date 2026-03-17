@@ -1,9 +1,24 @@
-import { Controller, Post, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { IsString, IsOptional } from 'class-validator';
 import { VideosService } from './videos.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { UserPayload } from '../common/interfaces/user.interface';
+
+export class GenerateVideoDto {
+  @IsString()
+  moduleId: string;
+
+  @IsOptional()
+  @IsString()
+  avatarId?: string;
+}
 
 @ApiTags('videos')
 @ApiBearerAuth()
@@ -12,24 +27,21 @@ import { UserPayload } from '../common/interfaces/user.interface';
 export class VideosController {
   constructor(private videosService: VideosService) {}
 
-  @Post('module/:moduleId/generate')
-  @ApiOperation({ summary: 'Generate video script for a module' })
-  generate(
-    @Param('moduleId') moduleId: string,
-    @CurrentUser() user: UserPayload,
-  ) {
-    return this.videosService.generateForModule(moduleId, user.id);
+  @Get('avatars')
+  @ApiOperation({ summary: 'List available preset avatars' })
+  getAvatars() {
+    return this.videosService.getAvatars();
   }
 
-  @Get('module/:moduleId/script')
-  @ApiOperation({ summary: 'Get generated script for a module' })
-  getScript(@Param('moduleId') moduleId: string) {
-    return this.videosService.getModuleScript(moduleId);
+  @Post('generate')
+  @ApiOperation({ summary: 'Generate a talking-head video for a module' })
+  generate(@Body() dto: GenerateVideoDto) {
+    return this.videosService.generateForModule(dto.moduleId, dto.avatarId);
   }
 
-  @Get('module/:moduleId/status')
-  @ApiOperation({ summary: 'Get video generation status' })
-  getStatus(@Param('moduleId') moduleId: string) {
-    return this.videosService.getStatus(moduleId);
+  @Get('module/:moduleId')
+  @ApiOperation({ summary: 'Get video status and URL for a module' })
+  getModuleVideo(@Param('moduleId') moduleId: string) {
+    return this.videosService.getModuleVideo(moduleId);
   }
 }

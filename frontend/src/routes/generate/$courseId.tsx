@@ -21,14 +21,16 @@ import {
   Zap,
   Star,
   TrendingUp,
-  X,
+  Video,
+  Loader2,
 } from 'lucide-react'
 import { courseApi } from '../../lib/api/courses'
 import { progressApi } from '../../lib/api/progress'
 import type { Lesson } from '../../types/course'
 import toast from 'react-hot-toast'
 import { videoApi } from '../../lib/api/videos'
-import { Video, FileVideo, Loader2 as LoaderIcon } from 'lucide-react'
+import { ModuleVideoPanel } from '../../components/video/ModuleVideoPanel'
+
 
 export const Route = createFileRoute('/generate/$courseId')({
   beforeLoad: ({ location }) => {
@@ -147,112 +149,74 @@ function ProgressBar({ percentage, level, levelLabel }: { percentage: number; le
 
 // ___ video Generation _________________________________________________
 
-function VideoScriptModal({ moduleId, moduleTitle, onClose }: {
-  moduleId: string
-  moduleTitle: string
-  onClose: () => void
+
+function GenerateVideoButton({ module, courseId, onOpenVideo }: {
+  module: any
+  courseId: string
+  onOpenVideo: (moduleId: string, moduleTitle: string) => void
 }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['video-script', moduleId],
-    queryFn: () => videoApi.getScript(moduleId).then(r => r.data),
-  })
-
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-surface-2 border border-white/10 rounded-3xl p-8 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-2xl"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-secondary/20 rounded-xl flex items-center justify-center">
-              <FileVideo className="w-5 h-5 text-brand-secondary" />
-            </div>
-            <div>
-              <h3 className="font-display font-bold text-lg">Video Script</h3>
-              <p className="text-text-muted text-sm">{moduleTitle}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors text-text-muted">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <LoaderIcon className="w-8 h-8 animate-spin text-brand-secondary" />
-          </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto">
-            <pre className="text-text-muted text-sm leading-relaxed whitespace-pre-wrap font-body bg-surface-3 rounded-2xl p-6 border border-white/5">
-              {data?.script}
-            </pre>
-          </div>
-        )}
-
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => { navigator.clipboard.writeText(data?.script ?? ''); toast.success('Script copied!') }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/30 rounded-xl font-bold text-sm hover:bg-brand-secondary hover:text-surface-1 transition-all"
-          >
-            <Copy className="w-4 h-4" /> Copy Script
-          </button>
-        </div>
-      </motion.div>
+    <div className="px-6 py-3">
+      <VideoStatusButton
+        moduleId={module.id}
+        moduleTitle={module.title}
+        onOpen={() => onOpenVideo(module.id, module.title)}
+      />
     </div>
   )
 }
 
-function GenerateVideoButton({ module, courseId }: { module: any; courseId: string }) {
-  const queryClient = useQueryClient()
-  const [showScript, setShowScript] = useState(false)
-
-  const generateMutation = useMutation({
-    mutationFn: () => videoApi.generateScript(module.id).then(r => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses', courseId] })
-      toast.success('Video script ready!')
-      setShowScript(true)
+// ─── ADD VideoStatusButton component (add this before CourseView function) ────
+function VideoStatusButton({
+  moduleId,
+  moduleTitle,
+  onOpen,
+}: {
+  moduleId: string
+  moduleTitle: string
+  onOpen: () => void
+}) {
+  const { data: videoStatus } = useQuery({
+    queryKey: ['video-status', moduleId],
+    queryFn: () => videoApi.getModuleVideo(moduleId).then(r => r.data),
+    refetchInterval: (query) => {
+      const s = query.state.data?.status
+      return s === 'queued' || s === 'processing' ? 8000 : false
     },
-    onError: () => toast.error('Failed to generate video script'),
   })
 
-  if (module.videoStatus === 'completed') {
+  const status = videoStatus?.status ?? 'none'
+
+  if (status === 'completed') {
     return (
-      <>
-        <div className="px-6 py-3">
-          <button
-            onClick={() => setShowScript(true)}
-            className="w-full py-2.5 bg-brand-secondary/10 border border-brand-secondary/30 rounded-xl text-xs font-bold uppercase tracking-widest text-brand-secondary hover:bg-brand-secondary hover:text-surface-1 transition-all flex items-center justify-center gap-2"
-          >
-            <PlayCircle className="w-3.5 h-3.5" /> View Script
-          </button>
-        </div>
-        {showScript && (
-          <VideoScriptModal
-            moduleId={module.id}
-            moduleTitle={module.title}
-            onClose={() => setShowScript(false)}
-          />
-        )}
-      </>
+      <button
+        onClick={onOpen}
+        className="w-full py-2.5 bg-brand-secondary/10 border border-brand-secondary/30 rounded-xl text-xs font-bold uppercase tracking-widest text-brand-secondary hover:bg-brand-secondary hover:text-surface-1 transition-all flex items-center justify-center gap-2"
+      >
+        <PlayCircle className="w-3.5 h-3.5" /> Watch Module Video
+      </button>
+    )
+  }
+
+  if (status === 'queued' || status === 'processing') {
+    return (
+      <button
+        onClick={onOpen}
+        className="w-full py-2.5 bg-brand-primary/10 border border-brand-primary/30 rounded-xl text-xs font-bold uppercase tracking-widest text-brand-primary transition-all flex items-center justify-center gap-2"
+      >
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        Generating... {videoStatus?.progress ?? 0}%
+      </button>
     )
   }
 
   return (
-    <div className="px-6 py-3">
-      <button
-        onClick={() => generateMutation.mutate()}
-        disabled={generateMutation.isPending || module.videoStatus === 'generating'}
-        className="w-full py-2.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold uppercase tracking-widest text-text-muted hover:text-brand-primary hover:border-brand-primary/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-      >
-        {generateMutation.isPending || module.videoStatus === 'generating'
-          ? <><LoaderIcon className="w-3.5 h-3.5 animate-spin" /> Generating...</>
-          : <><PlayCircle className="w-3.5 h-3.5" /> Generate Video Script</>
-        }
-      </button>
-    </div>
+    <button
+      onClick={onOpen}
+      className="w-full py-2.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold uppercase tracking-widest text-text-muted hover:text-brand-primary hover:border-brand-primary/30 transition-all flex items-center justify-center gap-2"
+    >
+      <Video className="w-3.5 h-3.5" /> Generate Video
+    </button>
   )
 }
 
@@ -264,6 +228,7 @@ function CourseView() {
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [celebration, setCelebration] = useState<{ type: 'lesson' | 'module' | 'course'; label: string } | null>(null)
   const lessonTopRef = useRef<HTMLDivElement | null>(null)
+  const [videoModule, setVideoModule] = useState<{ id: string; title: string } | null>(null)
 
   useEffect(() => {
     if (activeLesson && lessonTopRef.current) {
@@ -276,7 +241,7 @@ function CourseView() {
     queryFn: () => courseApi.getCourse(courseId).then(r => r.data),
   })
 
-  const { data: progressData, refetch: refetchProgress } = useQuery({
+  const { data: progressData } = useQuery({
     queryKey: ['progress', courseId],
     queryFn: () => progressApi.getProgress(courseId).then(r => r.data),
     enabled: !!course,
@@ -475,7 +440,7 @@ function CourseView() {
                       exit={{ height: 0, opacity: 0 }}
                       className="border-t border-white/5 py-2 bg-black/20 overflow-hidden"
                     >
-                      {module.lessons.map((lesson) => {
+                      {module.lessons.map((lesson: any) => {
                         const isDone = completedIds.has(lesson.id)
                         const isActive = activeLesson?.id === lesson.id
                         return (
@@ -499,6 +464,7 @@ function CourseView() {
                       <GenerateVideoButton
                         module={module}
                         courseId={courseId}
+                        onOpenVideo={(id, title) => setVideoModule({ id, title })}
                       />
                     </motion.div>
                   )}
@@ -633,6 +599,13 @@ function CourseView() {
           </AnimatePresence>
         </div>
       </div>
+      {videoModule && (
+        <ModuleVideoPanel
+          moduleId={videoModule.id}
+          moduleTitle={videoModule.title}
+          onClose={() => setVideoModule(null)}
+        />
+      )}
     </div>
   )
 }

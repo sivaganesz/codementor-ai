@@ -1,20 +1,31 @@
 import { apiClient } from './client'
 
-export interface VideoScriptData {
+export interface Avatar {
+  id: string
+  name: string
+  gender: 'male' | 'female'
+  preview_url: string | null
+}
+
+export interface VideoStatus {
+  id?: string
   moduleId: string
-  script: string
-  status: string
+  status: 'none' | 'queued' | 'processing' | 'completed' | 'failed'
+  progress: number
+  currentStep: string | null
+  videoUrl: string | null
+  script?: string
+  avatarId?: string
+  errorMessage?: string
 }
 
 export const videoApi = {
-  generateScript: (moduleId: string) =>
-    apiClient.post<VideoScriptData>(`/videos/module/${moduleId}/generate`),
+  getAvatars: () =>
+    apiClient.get<Avatar[]>('/videos/avatars'),
 
-  getScript: (moduleId: string) =>
-    apiClient.get<VideoScriptData>(`/videos/module/${moduleId}/script`),
+  generate: (moduleId: string, avatarId: string) =>
+    apiClient.post<VideoStatus>('/videos/generate', { moduleId, avatarId }),
 
-  getStatus: (moduleId: string) =>
-    apiClient.get<{ moduleId: string; videoStatus: string }>(
-      `/videos/module/${moduleId}/status`,
-    ),
+  getModuleVideo: (moduleId: string) =>
+    apiClient.get<VideoStatus>(`/videos/module/${moduleId}`),
 }

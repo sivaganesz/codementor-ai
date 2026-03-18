@@ -1,0 +1,15 @@
+# SadTalker — large model repo, never commit this
+SadTalker/
+
+# Python virtual environment — never commit this
+venv/
+
+# Generated outputs
+results/
+audio/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.env
